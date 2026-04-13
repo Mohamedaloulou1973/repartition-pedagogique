@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>التوزيع البيداغوجي — معهد سبيطلة 2</title>
+
+  <!-- ═══════════════════════════════════════════════════
+       PWA Meta Tags — ضرورية للتثبيت على الأيفون
+  ═══════════════════════════════════════════════════ -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="سبيطلة 2" />
+  <meta name="application-name" content="سبيطلة 2" />
+  <meta name="theme-color" content="#1a4d7c" />
+  <meta name="msapplication-TileColor" content="#1a4d7c" />
+  <meta name="description" content="تطبيق التوزيع البيداغوجي — معهد سبيطلة 2 — البحث عن الأساتذة والأقسام" />
+
+  <!-- أيقونات iOS -->
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="./manifest.json" />
+
+  <!-- أيقونة عادية للمتصفح -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
+
+  <!-- خطوط عربية -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════════════
+       CSS Variables
+    ══════════════════════════════════════════════ */
+    :root {
+      --primary:   #1a4d7c;
+      --secondary: #2e7db5;
+      --accent:    #e8a020;
+      --accent2:   #c0392b;
+      --bg:        #f0f4f8;
+      --card:      #ffffff;
+      --border:    #cdd8e3;
+      --text:      #1e2d3d;
+      --muted:     #6b8099;
+      --success:   #1d7a5f;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(26,77,124,.10);
+      --shadow-lg: 0 8px 40px rgba(26,77,124,.16);
+      /* iOS Safe Area */
+      --sat: env(safe-area-inset-top,    0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left,   0px);
+      --sar: env(safe-area-inset-right,  0px);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Tajawal', 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+      /* دعم الشق (notch) على الأيفون */
+      padding-top: var(--sat);
+      padding-bottom: var(--sab);
+      padding-left:  var(--sal);
+      padding-right: var(--sar);
+    }
+
+    /* ══════════════════════════════════════════════
+       الترويسة
+    ══════════════════════════════════════════════ */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: #fff;
+      padding: 18px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(26,77,124,.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      left: -40px; top: -40px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      pointer-events: none;
+    }
+    .header-icon {
+      width: 46px; height: 46px;
+      background: rgba(255,255,255,.18);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .header-text h1  { font-size: 1.1rem; font-weight: 800; }
+    .header-text p   { font-size: .78rem; opacity: .8; margin-top: 2px; font-weight: 300; }
+
+    /* زر الإشعار بالتحديث */
+    #update-banner {
+      display: none;
+      background: var(--accent);
+      color: #fff;
+      text-align: center;
+      padding: 9px 16px;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+    #update-banner.show { display: flex; }
+
+    /* ══════════════════════════════════════════════
+       بانر التثبيت — Install Banner (Android/Desktop)
+    ══════════════════════════════════════════════ */
+    #install-banner {
+      display: none;
+      background: linear-gradient(135deg, #0f5132, #198754);
+      color: #fff;
+      padding: 12px 18px;
+      align-items: center;
+      gap: 12px;
+      font-size: .88rem;
+    }
+    #install-banner.show { display: flex; }
+    #install-banner .ib-text { flex: 1; font-weight: 600; }
+    #install-banner .ib-sub  { font-size: .74rem; opacity: .8; display: block; font-weight: 400; }
+    .install-btn {
+      background: rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.4);
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: .83rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .install-btn:hover { background: rgba(255,255,255,.3); }
+    .install-close {
+      background: none; border: none; color: rgba(255,255,255,.7);
+      font-size: 18px; cursor: pointer; padding: 2px 6px;
+    }
+
+    /* بانر تعليمات iOS */
+    #ios-banner {
+      display: none;
+      background: linear-gradient(135deg, #0d3a6b, #1a6aad);
+      color: #fff;
+      padding: 14px 18px;
+      flex-direction: column;
+      gap: 10px;
+      font-size: .86rem;
+      position: relative;
+    }
+    #ios-banner.show { display: flex; }
+    .ios-title { font-weight: 800; font-size: .95rem; display: flex; align-items: center; gap: 6px; }
+    .ios-steps { display: flex; flex-direction: column; gap: 6px; }
+    .ios-step {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.12);
+      border-radius: 8px; padding: 8px 12px;
+    }
+    .ios-step-num {
+      width: 24px; height: 24px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .ios-close {
+      position: absolute; top: 10px; left: 14px;
+      background: rgba(255,255,255,.2); border: none; color: #fff;
+      border-radius: 50%; width: 26px; height: 26px;
+      font-size: 14px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    /* ══════════════════════════════════════════════
+       الحاوية الرئيسية
+    ══════════════════════════════════════════════ */
+    main {
+      max-width: 860px;
+      margin: 24px auto;
+      padding: 0 14px;
+      padding-bottom: 80px; /* مساحة للـ tab bar */
+    }
+
+    /* ══════════════════════════════════════════════
+       بطاقة البحث
+    ══════════════════════════════════════════════ */
+    .search-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 18px 18px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .search-card h2 {
+      font-size: .98rem; font-weight: 700; color: var(--primary);
+      margin-bottom: 16px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      display: flex; align-items: center; gap: 7px;
+    }
+
+    /* ══════════════════════════════════════════════
+       التبويبات
+    ══════════════════════════════════════════════ */
+    .mode-tabs {
+      display: flex; gap: 8px; margin-bottom: 16px;
+      background: var(--bg); border-radius: var(--radius); padding: 5px;
+    }
+    .mode-tab {
+      flex: 1; padding: 10px 12px;
+      border: none; border-radius: 9px;
+      background: transparent; color: var(--muted);
+      font-family: inherit; font-size: .88rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mode-tab.active {
+      background: var(--primary); color: #fff;
+      box-shadow: 0 3px 10px rgba(26,77,124,.28);
+    }
+    .mode-tab:hover:not(.active) { background: rgba(26,77,124,.08); color: var(--primary); }
+
+    /* ══════════════════════════════════════════════
+       حقل البحث
+    ══════════════════════════════════════════════ */
+    .input-wrapper { position: relative; }
+    .search-input {
+      width: 100%;
+      padding: 13px 16px 13px 46px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit; font-size: .95rem;
+      color: var(--text); background: var(--bg);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none; direction: rtl;
+      -webkit-appearance: none;
+    }
+    .search-input:focus {
+      border-color: var(--secondary); background: #fff;
+      box-shadow: 0 0 0 3px rgba(46,125,181,.15);
+    }
+    .search-input::placeholder { color: #aabbcc; }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted); font-size: 17px; pointer-events: none;
+    }
+    .clear-btn {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--muted); font-size: 17px; cursor: pointer;
+      padding: 4px; display: none; border-radius: 50%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .clear-btn.visible { display: block; }
+    .clear-btn:hover { color: var(--accent2); background: rgba(0,0,0,.06); }
+
+    /* ══════════════════════════════════════════════
+       Autocomplete
+    ══════════════════════════════════════════════ */
+    .autocomplete-list {
+      position: absolute; top: calc(100% + 5px); right: 0; left: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-lg);
+      z-index: 999; max-height: 220px; overflow-y: auto; display: none;
+    }
+    .autocomplete-list.open { display: block; }
+    .autocomplete-item {
+      padding: 11px 16px; cursor: pointer; font-size: .9rem;
+      transition: background .12s; border-bottom: 1px solid #f0f4f8;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover, .autocomplete-item.highlighted {
+      background: rgba(46,125,181,.08); color: var(--primary);
+    }
+    .autocomplete-item mark {
+      background: rgba(232,160,32,.3); color: inherit;
+      border-radius: 2px; padding: 0 1px;
+    }
+
+    /* ══════════════════════════════════════════════
+       زر البحث
+    ══════════════════════════════════════════════ */
+    .search-btn {
+      margin-top: 12px; width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff; border: none; border-radius: var(--radius);
+      font-family: inherit; font-size: .97rem; font-weight: 700;
+      cursor: pointer; transition: opacity .2s, transform .15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .search-btn:hover  { opacity: .92; transform: translateY(-1px); }
+    .search-btn:active { transform: translateY(0); opacity: .85; }
+
+    /* ══════════════════════════════════════════════
+       النتائج
+    ══════════════════════════════════════════════ */
+    #results-area { animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    .status-msg {
+      text-align: center; padding: 40px 20px;
+      color: var(--muted); font-size: .92rem;
+    }
+    .status-msg .icon { font-size: 40px; margin-bottom: 10px; }
+    .status-msg.error { color: var(--accent2); }
+
+    .result-card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+      margin-bottom: 14px; overflow: hidden;
+      animation: slideIn .22s ease both;
+    }
+    @keyframes slideIn { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+    .result-card:nth-child(2) { animation-delay:.04s; }
+    .result-card:nth-child(3) { animation-delay:.08s; }
+    .result-card:nth-child(4) { animation-delay:.12s; }
+
+    .result-header {
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--primary), #2563a8);
+      color: #fff; display: flex; align-items: center; gap: 11px;
+    }
+    .rh-icon {
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,.18); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+    .rh-title { font-size: 1rem; font-weight: 700; }
+    .rh-sub   { font-size: .76rem; opacity: .75; margin-top: 1px; }
+
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    .subject-item {
+      display: flex; flex-direction: column; gap: 2px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--bg);
+      border-left: 1px solid var(--bg);
+      transition: background .12s;
+    }
+    .subject-item:hover { background: #f7fbff; }
+    .subject-label   { font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing:.4px; }
+    .subject-teacher { font-size: .88rem; font-weight: 600; color: var(--text); }
+
+    .teacher-summary { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
+    .teacher-header {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, #1d6a40, #25a060);
+      color: #fff; display: flex; align-items: center; gap: 12px;
+    }
+    .teacher-avatar {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,.2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .teacher-name { font-size: 1.08rem; font-weight: 800; }
+    .teacher-meta { font-size: .78rem; opacity: .78; margin-top: 2px; }
+
+    .classes-table { width: 100%; border-collapse: collapse; }
+    .classes-table th {
+      padding: 10px 16px; text-align: right;
+      font-size: .78rem; font-weight: 700; color: var(--muted);
+      background: #f7fafd; border-bottom: 2px solid var(--border);
+    }
+    .classes-table td {
+      padding: 10px 16px; font-size: .88rem;
+      border-bottom: 1px solid var(--bg); vertical-align: middle;
+    }
+    .classes-table tr:last-child td { border-bottom: none; }
+    .classes-table tr:hover td { background: #f7fbff; }
+    .class-badge {
+      display: inline-block;
+      background: rgba(26,77,124,.1); color: var(--primary);
+      border-radius: 6px; padding: 3px 9px;
+      font-size: .82rem; font-weight: 700;
+    }
+    .subject-badge {
+      display: inline-block;
+      background: rgba(232,160,32,.15); color: #8a5800;
+      border-radius: 6px; padding: 3px 9px;
+      font-size: .8rem; font-weight: 600;
+    }
+
+    .stats-row {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 50px; padding: 5px 12px;
+      font-size: .8rem; font-weight: 600; color: var(--primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .stat-chip .num {
+      background: var(--primary); color: #fff;
+      border-radius: 50px; padding: 1px 7px; font-size: .76rem;
+    }
+
+    /* ══════════════════════════════════════════════
+       شريط الحالة السفلي (لأجهزة iOS)
+    ══════════════════════════════════════════════ */
+    footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card); border-top: 1px solid var(--border);
+      text-align: center; padding: 8px 16px;
+      padding-bottom: calc(8px + var(--sab));
+      color: var(--muted); font-size: .72rem;
+      box-shadow: 0 -2px 12px rgba(0,0,0,.07);
+      z-index: 50;
+    }
+
+    /* ══════════════════════════════════════════════
+       Responsive
+    ══════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      main { margin: 12px auto; padding: 0 10px; padding-bottom: 72px; }
+      .search-card { padding: 16px 13px; }
+      .subjects-grid { grid-template-columns: 1fr 1fr; }
+      .header-text h1 { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     إشعار التحديث
+══════════════════════════════════════════════ -->
+<div id="update-banner" onclick="applyUpdate()">
+  🔄 يوجد تحديث جديد — اضغط هنا للتطبيق
+</div>
+
+<!-- ══════════════════════════════════════════════
+     بانر التثبيت (Android / Desktop)
+══════════════════════════════════════════════ -->
+<div id="install-banner">
+  <span style="font-size:24px">📲</span>
+  <div class="ib-text">
+    ثبِّت التطبيق على جهازك
+    <span class="ib-sub">للوصول السريع بدون إنترنت</span>
+  </div>
+  <button class="install-btn" onclick="installApp()">تثبيت</button>
+  <button class="install-close" onclick="dismissInstall()" title="إغلاق">✕</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     تعليمات التثبيت على iOS
+══════════════════════════════════════════════ -->
+<div id="ios-banner">
+  <button class="ios-close" onclick="document.getElementById('ios-banner').classList.remove('show')">✕</button>
+  <div class="ios-title">📲 تثبيت التطبيق على الأيفون</div>
+  <div class="ios-steps">
+    <div class="ios-step">
+      <span class="ios-step-num">1</span>
+      <span>اضغط على زر المشاركة <strong>⎙</strong> في شريط Safari</span>
+    </div>
+    <div class="ios-step">
+      <span class="ios-step-num">2</span>
+      <span>اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong></span>
+    </div>
+    <div class="ios-step">
+      <span class="ios-step-num">3</span>
+      <span>اضغط <strong>"إضافة"</strong> — وسيظهر التطبيق على شاشتك!</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     الترويسة
+══════════════════════════════════════════════ -->
+<header>
+  <div class="header-icon">🏫</div>
+  <div class="header-text">
+    <h1>التوزيع البيداغوجي</h1>
+    <p>معهد سبيطلة 2 — 2025/2026</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- بطاقة البحث -->
+  <div class="search-card">
+    <h2>🔍 البحث في التوزيع</h2>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-teacher" onclick="switchMode('teacher')">
+        👤 حسب الأستاذ
+      </button>
+      <button class="mode-tab" id="tab-class" onclick="switchMode('class')">
+        🏛️ حسب القسم
+      </button>
+    </div>
+
+    <div class="input-wrapper">
+      <span class="input-icon">🔎</span>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="ابدأ الكتابة للبحث..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        oninput="onInputChange()"
+        onkeydown="onKeyDown(event)"
+      />
+      <button class="clear-btn" id="clear-btn" onclick="clearSearch()">✕</button>
+      <div class="autocomplete-list" id="autocomplete-list"></div>
+    </div>
+
+    <button class="search-btn" onclick="doSearch()">🔍 بحث</button>
+  </div>
+
+  <!-- منطقة النتائج -->
+  <div id="results-area">
+    <div class="status-msg">
+      <div class="icon">📋</div>
+      <div>اختر نوع البحث وأدخل اسم الأستاذ أو القسم</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  إنجاز: محمد الهاني — مدير معهد سبيطلة 2 &nbsp;|&nbsp; v1.0
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   قاعدة البيانات الكاملة
+   34 قسماً — السنوات 1 إلى 4 ثانوي
+═══════════════════════════════════════════════════════════ */
+const DATA = {
+  /* ——— السنة الأولى ——— */
+  "1ث1":{"عربية":"مالك علاقي","فرنسية":"سعاد التليلي","إنجليزية":"نعيمة الحريزي","تاريخ وجغ.":"آمنة الدربالي","ت. مدنية":"نعيمة غواري","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بلقاسم مباركي","ع.ح.أ":"محجوب الهلالي","ع. فيزيائية":"مهدي بليلي","تكنولوجيا":"مبروك الدبابي","إعلامية":"مراد النومي","ت. بدنية":"مبروك الهلالي"},
+  "1ث2":{"عربية":"مالك علاقي","فرنسية":"سعاد التليلي","إنجليزية":"نعيمة الحريزي","تاريخ وجغ.":"آمنة الدربالي","ت. مدنية":"نعيمة غواري","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بلقاسم مباركي","ع.ح.أ":"محجوب الهلالي","ع. فيزيائية":"مهدي بليلي","تكنولوجيا":"مبروك الدبابي","إعلامية":"مراد النومي","ت. بدنية":"مبروك الهلالي"},
+  "1ث3":{"عربية":"لمياء جراد","فرنسية":"سعاد التليلي","إنجليزية":"سامية قيزاني","تاريخ وجغ.":"آمنة الدربالي","ت. مدنية":"نعيمة غواري","ت. إسلامي":"مجدي الشرفي","رياضيات":"عادل محفوظي","ع.ح.أ":"محجوب الهلالي","ع. فيزيائية":"مهدي بليلي","تكنولوجيا":"مبروك الدبابي","إعلامية":"مراد النومي","ت. بدنية":"فوزي غضباني"},
+  "1ث4":{"عربية":"لمياء جراد","فرنسية":"كريمة اليوسفي","إنجليزية":"سامية قيزاني","تاريخ وجغ.":"آمنة الدربالي","ت. مدنية":"نعيمة غواري","ت. إسلامي":"مجدي الشرفي","رياضيات":"عادل محفوظي","ع.ح.أ":"سلاف الشهبي","ع. فيزيائية":"خميس الهادفي","تكنولوجيا":"مبروك الدبابي","إعلامية":"مراد النومي","ت. بدنية":"فوزي غضباني"},
+  "1ث5":{"عربية":"بسمة كحلاوي","فرنسية":"كريمة اليوسفي","إنجليزية":"سامية قيزاني","تاريخ وجغ.":"سميرة حيدوري","ت. مدنية":"نعيمة غواري","ت. إسلامي":"مجدي الشرفي","رياضيات":"عادل محفوظي","ع.ح.أ":"سلاف الشهبي","ع. فيزيائية":"خميس الهادفي","تكنولوجيا":"علي العباسي","إعلامية":"زينب مولاهي","ت. بدنية":"نبيل البوزيدي"},
+  "1ث6":{"عربية":"بسمة كحلاوي","فرنسية":"كريمة اليوسفي","إنجليزية":"سامية قيزاني","تاريخ وجغ.":"سميرة حيدوري","ت. مدنية":"نعيمة غواري","ت. إسلامي":"مجدي الشرفي","رياضيات":"م. الهادي عليمي","ع.ح.أ":"سلاف الشهبي","ع. فيزيائية":"خميس الهادفي","تكنولوجيا":"علي العباسي","إعلامية":"زينب مولاهي","ت. بدنية":"عبد الحميد الرميلي"},
+  "1ث7":{"عربية":"بسمة كحلاوي","فرنسية":"العقبي العلالقي","إنجليزية":"هالة قسومي","تاريخ وجغ.":"سميرة حيدوري","ت. مدنية":"حنان بوعزي","ت. إسلامي":"مجدي الشرفي","رياضيات":"م. الهادي عليمي","ع.ح.أ":"كريمة الدربالي","ع. فيزيائية":"حسين الدالي","تكنولوجيا":"علي العباسي","إعلامية":"زينب مولاهي","ت. بدنية":"عبد الحميد الرميلي"},
+  "1ث8":{"عربية":"المولدي الهرابي","فرنسية":"العقبي العلالقي","إنجليزية":"هالة قسومي","تاريخ وجغ.":"لطيفة المنصوري","ت. مدنية":"حنان بوعزي","ت. إسلامي":"نسيمة خضراوي","رياضيات":"سمير الدبابي","ع.ح.أ":"كريمة الدربالي","ع. فيزيائية":"حسين الدالي","تكنولوجيا":"خالد عبيدي","إعلامية":"مسعود بوعزيزي","ت. بدنية":"كمال ميساوي"},
+  "1ث9":{"عربية":"المولدي الهرابي","فرنسية":"آمال عمري","إنجليزية":"محسن السعودي","تاريخ وجغ.":"لطيفة المنصوري","ت. مدنية":"حنان بوعزي","ت. إسلامي":"نسيمة خضراوي","رياضيات":"سمير الدبابي","ع.ح.أ":"كريمة الدربالي","ع. فيزيائية":"حسين الدالي","تكنولوجيا":"خالد عبيدي","إعلامية":"مسعود بوعزيزي","ت. بدنية":"نبيل البوزيدي"},
+  "1ث10":{"عربية":"المولدي الهرابي","فرنسية":"آمال عمري","إنجليزية":"محسن السعودي","تاريخ وجغ.":"لطيفة المنصوري","ت. مدنية":"حنان بوعزي","ت. إسلامي":"نسيمة خضراوي","رياضيات":"سمير الدبابي","ع.ح.أ":"كريمة الدربالي","ع. فيزيائية":"رضوان الهلالي","تكنولوجيا":"خالد عبيدي","إعلامية":"مسعود بوعزيزي","ت. بدنية":"كمال ميساوي"},
+  /* ——— السنة الثانية ——— */
+  "2آداب1":{"عربية":"عبد الرزاق العباسي","فرنسية":"فاطمة الزهرة طهوري","إنجليزية":"هالة قسومي","تاريخ وجغ.":"عبد العزيز عباسي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بشير المباركي","ع.ح.أ":"كريمة الدربالي","إعلامية":"مسعود بوعزيزي","ت. بدنية":"نبيل البوزيدي"},
+  "2آداب2":{"عربية":"عبد الرزاق العباسي","فرنسية":"فاطمة الزهرة طهوري","إنجليزية":"هالة قسومي","تاريخ وجغ.":"عبد العزيز عباسي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بشير المباركي","ع.ح.أ":"كريمة الدربالي","إعلامية":"مسعود بوعزيزي","ت. بدنية":"كمال ميساوي"},
+  "2علوم1":{"عربية":"أحمد يوسفي","فرنسية":"عبد الكريم عويديدي","إنجليزية":"نعيمة الحريزي","تاريخ وجغ.":"كمال الراشدي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بشير المباركي","ع.ح.أ":"صلاح الدين الجوادي","ع. فيزيائية":"رضوان الهلالي","تكنولوجيا":"مبروك الدبابي","إعلامية":"جعفر مولاهي","ت. بدنية":"شيراز نصراوي"},
+  "2علوم2":{"عربية":"أحمد يوسفي","فرنسية":"عبد الكريم عويديدي","إنجليزية":"نعيمة الحريزي","تاريخ وجغ.":"كمال الراشدي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"حسن بوعلاقي","رياضيات":"سمير الدبابي","ع.ح.أ":"الناجم محمدي","ع. فيزيائية":"رضوان الهلالي","تكنولوجيا":"خالد عبيدي","إعلامية":"مسعود بوعزيزي","ت. بدنية":"شيراز نصراوي"},
+  "2اقتصاد1":{"عربية":"بسمة كحلاوي","فرنسية":"عبير الصالحي","إنجليزية":"نعيمة التليلي","تاريخ وجغ.":"سميرة حيدوري","ت. مدنية":"نعيمة غواري","ت. إسلامي":"حسن بوعلاقي","رياضيات":"م. الهادي عليمي","إعلامية":"زينب مولاهي","اقتصاد":"مسعود بوعزيزي","تصرف":"مروى العلوي","ت. بدنية":"كمال ميساوي"},
+  "2اقتصاد2":{"عربية":"سميحة غابري","فرنسية":"عبير الصالحي","إنجليزية":"نعيمة التليلي","تاريخ وجغ.":"سميرة حيدوري","ت. مدنية":"نعيمة غواري","ت. إسلامي":"حسن بوعلاقي","رياضيات":"م. الهادي عليمي","إعلامية":"زينب مولاهي","اقتصاد":"عواطف أحمدي","تصرف":"روضة غضباني","ت. بدنية":"كمال ميساوي"},
+  "2اقتصاد3":{"عربية":"سميحة غابري","فرنسية":"عبير الصالحي","إنجليزية":"نعيمة التليلي","تاريخ وجغ.":"سميرة حيدوري","ت. مدنية":"نعيمة غواري","ت. إسلامي":"حسن بوعلاقي","رياضيات":"سمير الدبابي","إعلامية":"زينب مولاهي","اقتصاد":"عواطف أحمدي","تصرف":"روضة غضباني","ت. بدنية":"كمال ميساوي"},
+  "2تكاع1":{"عربية":"أحمد يوسفي","فرنسية":"فاطمة الزهرة طهوري","إنجليزية":"عبد الله درواشي","تاريخ وجغ.":"كمال الراشدي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بشير المباركي","ع. فيزيائية":"الأسعد الراشدي","تكنولوجيا":"علي العباسي","إعلامية":"عياشي السعودي","ت. بدنية":"شيراز نصراوي"},
+  "2تكاع2":{"عربية":"أحمد يوسفي","فرنسية":"عبد الكريم عويديدي","إنجليزية":"عبد الله درواشي","تاريخ وجغ.":"كمال الراشدي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"حسن بوعلاقي","رياضيات":"بشير المباركي","ع. فيزيائية":"الأسعد الراشدي","تكنولوجيا":"علي العباسي","إعلامية":"نضال المحمودي","ت. بدنية":"شيراز نصراوي"},
+  /* ——— السنة الثالثة ——— */
+  "3آداب1":{"عربية":"نفيسة بوعلاقي","فرنسية":"العقبي العلالقي","إنجليزية":"طارق الخوني","تاريخ وجغ.":"عبد العزيز عباسي","ت. مدنية":"نعيمة غواري","ت. إسلامي":"مجدي الشرفي","ع.ح.أ":"الناجم محمدي","إعلامية":"مراد النومي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","فلسفة":"منى الدبابي","ت. بدنية":"فوزي غضباني"},
+  "3آداب2":{"عربية":"نفيسة بوعلاقي","فرنسية":"العقبي العلالقي","إنجليزية":"هالة قسومي","تاريخ وجغ.":"عبد العزيز عباسي","ت. مدنية":"نعيمة غواري","ت. إسلامي":"مجدي الشرفي","إعلامية":"مراد النومي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","فلسفة":"منى الدبابي","ت. بدنية":"فوزي غضباني"},
+  "3آداب3":{"عربية":"سميحة غابري","فرنسية":"آمال عمري","إنجليزية":"بسمة الشرطاني","تاريخ وجغ.":"كمال الراشدي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"مجدي الشرفي","إعلامية":"مراد النومي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","فلسفة":"منية القصدلي","ت. بدنية":"فوزي غضباني"},
+  "3آداب4":{"عربية":"سميحة غابري","فرنسية":"آمال عمري","إنجليزية":"بسمة الشرطاني","تاريخ وجغ.":"كمال الراشدي","ت. مدنية":"حنان بوعزي","ت. إسلامي":"مجدي الشرفي","إعلامية":"مراد النومي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","فلسفة":"منية القصدلي","ت. بدنية":"فوزي غضباني"},
+  "3علوم1":{"عربية":"لمياء جراد","فرنسية":"رماح بوزيدي","إنجليزية":"عبد الله درواشي","تاريخ وجغ.":"آمنة الدربالي","ت. إسلامي":"مجدي الشرفي","رياضيات":"بلقاسم مباركي","ع.ح.أ":"صلاح الدين الجوادي","ع. فيزيائية":"مهدي بليلي","إعلامية":"جعفر مولاهي","فلسفة":"نبيل الصحراوي","ت. بدنية":"عبد الحميد الرميلي"},
+  "3علوم2":{"عربية":"لمياء جراد","فرنسية":"رماح بوزيدي","إنجليزية":"عبد الله درواشي","تاريخ وجغ.":"آمنة الدربالي","ت. إسلامي":"مجدي الشرفي","رياضيات":"م. إسماعيل مولاهي","ع.ح.أ":"الناجم محمدي","ع. فيزيائية":"حسين الدالي","إعلامية":"جعفر مولاهي","فلسفة":"نبيل الصحراوي","ت. بدنية":"عبد الحميد الرميلي"},
+  "3اقتصاد1":{"عربية":"نفيسة بوعلاقي","فرنسية":"رماح بوزيدي","إنجليزية":"عبد الله درواشي","تاريخ وجغ.":"م. الصالح مولاهي","رياضيات":"م. إسماعيل مولاهي","اقتصاد":"عواطف أحمدي","تصرف":"روضة غضباني","إعلامية":"مسعود بوعزيزي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","فلسفة":"منية القصدلي","ت. بدنية":"نبيل البوزيدي"},
+  "3اقتصاد2":{"عربية":"المولدي الهرابي","فرنسية":"رماح بوزيدي","إنجليزية":"عبد الله درواشي","تاريخ وجغ.":"م. الصالح مولاهي","رياضيات":"م. إسماعيل مولاهي","اقتصاد":"عواطف أحمدي","تصرف":"روضة غضباني","إعلامية":"مسعود بوعزيزي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","فلسفة":"منية القصدلي","ت. بدنية":"عبد الحميد الرميلي"},
+  /* ——— السنة الرابعة ——— */
+  "4آداب1":{"عربية":"عبد الرزاق العباسي","فرنسية":"فاطمة الزهرة طهوري","إنجليزية":"طارق الخوني","تاريخ وجغ.":"م. الصالح مولاهي","ت. إسلامي":"حسن بوعلاقي","ع.ح.أ":"صلاح الدين الجوادي","إعلامية":"جعفر مولاهي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"منى الدبابي","ت. بدنية":"شيراز نصراوي"},
+  "4آداب2":{"عربية":"نفيسة بوعلاقي","فرنسية":"عبير الصالحي","إنجليزية":"نعيمة الحريزي","تاريخ وجغ.":"لطيفة المنصوري","ت. إسلامي":"مجدي الشرفي","إعلامية":"جعفر مولاهي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"نبيل الصحراوي","ت. بدنية":"شيراز نصراوي"},
+  "4آداب3":{"عربية":"أحمد يوسفي","فرنسية":"عبد الكريم عويديدي","إنجليزية":"سامية قيزاني","تاريخ وجغ.":"لطيفة المنصوري","ت. إسلامي":"مجدي الشرفي","إعلامية":"زينب مولاهي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"نبيل الصحراوي","ت. بدنية":"عبد الحميد الرميلي"},
+  "4علوم1":{"عربية":"مالك علاقي","فرنسية":"سعاد التليلي","إنجليزية":"بسمة الشرطاني","رياضيات":"م. الهادي عليمي","ع.ح.أ":"محجوب الهلالي","ع. فيزيائية":"خميس الهادفي","إعلامية":"نضال المحمودي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"منى الدبابي","ت. بدنية":"مبروك الهلالي"},
+  "4علوم2":{"عربية":"مالك علاقي","فرنسية":"سعاد التليلي","إنجليزية":"بسمة الشرطاني","رياضيات":"عادل محفوظي","ع.ح.أ":"سلاف الشهبي","ع. فيزيائية":"الأسعد الراشدي","إعلامية":"نضال المحمودي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"منية القصدلي","ت. بدنية":"مبروك الهلالي"},
+  "4اقتصاد1":{"عربية":"مالك علاقي","فرنسية":"كريمة اليوسفي","إنجليزية":"نعيمة التليلي","تاريخ وجغ.":"م. الصالح مولاهي","رياضيات":"بلقاسم مباركي","اقتصاد":"مسعود بوعزيزي","تصرف":"مروى العلوي","إعلامية":"عياشي السعودي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"منية القصدلي","ت. بدنية":"نبيل البوزيدي"},
+  "4اقتصاد2":{"عربية":"مالك علاقي","فرنسية":"كريمة اليوسفي","إنجليزية":"نعيمة التليلي","تاريخ وجغ.":"م. الصالح مولاهي","رياضيات":"م. إسماعيل مولاهي","اقتصاد":"مسعود بوعزيزي","تصرف":"مروى العلوي","إعلامية":"عياشي السعودي","ت. تشكيلية":"آمال عبايدي","ت. موسيقية":"عبد المنعم خشناوي","اسبانية":"شفيقة علاقي","إيطالية":"ليلى الماجري","ألمانية":"فافا المهذبي","فلسفة":"منية القصدلي","ت. بدنية":"مبروك الهلالي"}
+};
+
+/* أسماء العرض للأقسام */
+const CLASS_LABELS = {
+  "1ث1":"1 ث 1","1ث2":"1 ث 2","1ث3":"1 ث 3","1ث4":"1 ث 4","1ث5":"1 ث 5",
+  "1ث6":"1 ث 6","1ث7":"1 ث 7","1ث8":"1 ث 8","1ث9":"1 ث 9","1ث10":"1 ث 10",
+  "2آداب1":"2 آداب 1","2آداب2":"2 آداب 2","2علوم1":"2 علوم 1","2علوم2":"2 علوم 2",
+  "2اقتصاد1":"2 اقتصاد 1","2اقتصاد2":"2 اقتصاد 2","2اقتصاد3":"2 اقتصاد 3",
+  "2تكاع1":"2 تك اع 1","2تكاع2":"2 تك اع 2",
+  "3آداب1":"3 آداب 1","3آداب2":"3 آداب 2","3آداب3":"3 آداب 3","3آداب4":"3 آداب 4",
+  "3علوم1":"3 ع.ت 1","3علوم2":"3 ع.ت 2",
+  "3اقتصاد1":"3 اقتصاد 1","3اقتصاد2":"3 اقتصاد 2",
+  "4آداب1":"4 آداب 1","4آداب2":"4 آداب 2","4آداب3":"4 آداب 3",
+  "4علوم1":"4 ع.ت 1","4علوم2":"4 ع.ت 2",
+  "4اقتصاد1":"4 اقتصاد 1","4اقتصاد2":"4 اقتصاد 2"
+};
+
+/* بناء فهرس الأساتذة تلقائياً */
+const teacherIndex = {};
+for (const [cls, subs] of Object.entries(DATA)) {
+  for (const [sub, teacher] of Object.entries(subs)) {
+    if (!teacherIndex[teacher]) teacherIndex[teacher] = [];
+    teacherIndex[teacher].push({ class: cls, subject: sub });
+  }
+}
+const ALL_TEACHERS = Object.keys(teacherIndex).sort();
+const ALL_CLASSES  = Object.keys(DATA);
+
+/* ═══════════════════════════════════════════════════════════
+   منطق التطبيق
+═══════════════════════════════════════════════════════════ */
+let currentMode = 'teacher';
+let acHighlight  = -1;
+let deferredPrompt = null;  // لحفظ حدث التثبيت على Android
+
+/* تهيئة الوضع من URL params */
+(function initMode() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('mode') === 'class') switchMode('class');
+})();
+
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('tab-teacher').classList.toggle('active', mode === 'teacher');
+  document.getElementById('tab-class').classList.toggle('active', mode === 'class');
+  const inp = document.getElementById('search-input');
+  inp.placeholder = mode === 'teacher' ? 'ابدأ بكتابة اسم الأستاذ...' : 'ابدأ بكتابة اسم القسم...';
+  inp.value = '';
+  document.getElementById('clear-btn').classList.remove('visible');
+  hideAutocomplete();
+  clearResults();
+  inp.focus();
+}
+
+function onInputChange() {
+  const val = document.getElementById('search-input').value.trim();
+  document.getElementById('clear-btn').classList.toggle('visible', val.length > 0);
+  showAutocomplete(val);
+}
+
+function showAutocomplete(query) {
+  const list = document.getElementById('autocomplete-list');
+  if (!query) { hideAutocomplete(); return; }
+  const source = currentMode === 'teacher'
+    ? ALL_TEACHERS
+    : ALL_CLASSES.map(c => CLASS_LABELS[c] || c);
+  const matches = source.filter(item =>
+    normalize(item).includes(normalize(query))
+  );
+  if (!matches.length) { hideAutocomplete(); return; }
+  acHighlight = -1;
+  list.innerHTML = matches.slice(0, 10).map((item, i) =>
+    `<div class="autocomplete-item" data-index="${i}"
+          ontouchstart="selectItem('${escHtml(item)}')"
+          onclick="selectItem('${escHtml(item)}')">${highlight(item, query)}</div>`
+  ).join('');
+  list.classList.add('open');
+}
+
+function hideAutocomplete() {
+  document.getElementById('autocomplete-list').classList.remove('open');
+  acHighlight = -1;
+}
+
+function selectItem(val) {
+  document.getElementById('search-input').value = val;
+  document.getElementById('clear-btn').classList.add('visible');
+  hideAutocomplete();
+  doSearch();
+}
+
+function highlight(text, query) {
+  if (!query) return escHtml(text);
+  const re = new RegExp(`(${escRe(normalize(query))})`, 'g');
+  return escHtml(text).replace(
+    new RegExp(`(${escRe(query)})`, 'g'), '<mark>$1</mark>'
+  );
+}
+
+function onKeyDown(e) {
+  const list  = document.getElementById('autocomplete-list');
+  const items = list.querySelectorAll('.autocomplete-item');
+  if (e.key === 'Enter') {
+    if (acHighlight >= 0 && items[acHighlight]) selectItem(items[acHighlight].textContent);
+    else doSearch();
+    hideAutocomplete(); return;
+  }
+  if (e.key === 'Escape') { hideAutocomplete(); return; }
+  if (!list.classList.contains('open') || !items.length) return;
+  if (e.key === 'ArrowDown') acHighlight = Math.min(acHighlight + 1, items.length - 1);
+  else if (e.key === 'ArrowUp') acHighlight = Math.max(acHighlight - 1, -1);
+  else return;
+  e.preventDefault();
+  items.forEach((el, i) => el.classList.toggle('highlighted', i === acHighlight));
+  if (acHighlight >= 0) document.getElementById('search-input').value = items[acHighlight].textContent;
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.input-wrapper')) hideAutocomplete();
+});
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('clear-btn').classList.remove('visible');
+  hideAutocomplete(); clearResults();
+  document.getElementById('search-input').focus();
+}
+
+function doSearch() {
+  hideAutocomplete();
+  const raw = document.getElementById('search-input').value.trim();
+  if (!raw) { showStatus('أدخل اسم الأستاذ أو القسم للبحث', '🔍'); return; }
+  if (currentMode === 'teacher') searchByTeacher(raw);
+  else                           searchByClass(raw);
+}
+
+function searchByTeacher(query) {
+  const matches = ALL_TEACHERS.filter(t => normalize(t).includes(normalize(query)));
+  if (!matches.length) { showError(`لم يُعثر على أستاذ: «${query}»`); return; }
+  const area = document.getElementById('results-area');
+  area.innerHTML = '';
+  area.innerHTML += `<div class="stats-row">
+    <div class="stat-chip">👤 نتائج <span class="num">${matches.length}</span></div>
+    <div class="stat-chip">🔍 بحث حسب الأستاذ</div>
+  </div>`;
+  matches.forEach((teacher, idx) => {
+    const entries    = teacherIndex[teacher];
+    const classCount = [...new Set(entries.map(e => e.class))].length;
+    const rows = entries
+      .sort((a,b) => a.class.localeCompare(b.class,'ar'))
+      .map((e,i) => `<tr>
+        <td>${i+1}</td>
+        <td><span class="class-badge">${escHtml(CLASS_LABELS[e.class]||e.class)}</span></td>
+        <td><span class="subject-badge">${escHtml(e.subject)}</span></td>
+      </tr>`).join('');
+    const card = document.createElement('div');
+    card.className = 'teacher-summary result-card';
+    card.style.animationDelay = `${idx*0.05}s`;
+    card.innerHTML = `
+      <div class="teacher-header">
+        <div class="teacher-avatar">👤</div>
+        <div>
+          <div class="teacher-name">${escHtml(teacher)}</div>
+          <div class="teacher-meta">${classCount} قسم — ${entries.length} حصة</div>
+        </div>
+      </div>
+      <table class="classes-table">
+        <thead><tr><th>ع/ر</th><th>القسم</th><th>المادة</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    area.appendChild(card);
+  });
+}
+
+function searchByClass(query) {
+  const matchedKeys = ALL_CLASSES.filter(key => {
+    const lbl = CLASS_LABELS[key] || key;
+    return normalize(key).includes(normalize(query)) || normalize(lbl).includes(normalize(query));
+  });
+  if (!matchedKeys.length) { showError(`لم يُعثر على قسم: «${query}»`); return; }
+  const area = document.getElementById('results-area');
+  area.innerHTML = `<div class="stats-row">
+    <div class="stat-chip">🏛️ أقسام <span class="num">${matchedKeys.length}</span></div>
+    <div class="stat-chip">🔍 بحث حسب القسم</div>
+  </div>`;
+  matchedKeys.forEach((key, idx) => {
+    const subs  = DATA[key];
+    const label = CLASS_LABELS[key] || key;
+    const items = Object.entries(subs).map(([sub,teacher]) =>
+      `<div class="subject-item">
+         <span class="subject-label">${escHtml(sub)}</span>
+         <span class="subject-teacher">${escHtml(teacher)}</span>
+       </div>`).join('');
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.style.animationDelay = `${idx*0.05}s`;
+    card.innerHTML = `
+      <div class="result-header">
+        <div class="rh-icon">🏛️</div>
+        <div>
+          <div class="rh-title">القسم: ${escHtml(label)}</div>
+          <div class="rh-sub">${Object.keys(subs).length} أستاذ</div>
+        </div>
+      </div>
+      <div class="subjects-grid">${items}</div>`;
+    area.appendChild(card);
+  });
+}
+
+function showStatus(msg, icon='📋') {
+  document.getElementById('results-area').innerHTML =
+    `<div class="status-msg"><div class="icon">${icon}</div><div>${escHtml(msg)}</div></div>`;
+}
+function showError(msg) {
+  document.getElementById('results-area').innerHTML =
+    `<div class="status-msg error"><div class="icon">⚠️</div><div>${escHtml(msg)}</div></div>`;
+}
+function clearResults() {
+  document.getElementById('results-area').innerHTML =
+    `<div class="status-msg"><div class="icon">📋</div><div>اختر نوع البحث وأدخل اسم الأستاذ أو القسم</div></div>`;
+}
+
+/* مساعدات */
+function normalize(s) {
+  return String(s).replace(/[أإآ]/g,'ا').replace(/[ةه]/g,'ه').replace(/[يى]/g,'ي').replace(/\s+/g,' ').trim();
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+/* ═══════════════════════════════════════════════════════════
+   تسجيل Service Worker
+═══════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      console.log('[App] SW registered:', reg.scope);
+
+      /* إشعار بالتحديث */
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            document.getElementById('update-banner').classList.add('show');
+          }
+        });
+      });
+    } catch (err) {
+      console.warn('[App] SW registration failed:', err);
+    }
+  });
+}
+
+function applyUpdate() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg && reg.waiting) {
+        reg.waiting.postMessage('SKIP_WAITING');
+        location.reload();
+      }
+    });
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   منطق التثبيت — PWA Install
+═══════════════════════════════════════════════════════════ */
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    console.log('[App] Install choice:', choice.outcome);
+    deferredPrompt = null;
+    document.getElementById('install-banner').classList.remove('show');
+  });
+}
+
+function dismissInstall() {
+  document.getElementById('install-banner').classList.remove('show');
+  sessionStorage.setItem('install-dismissed', '1');
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+  console.log('[App] PWA installed successfully!');
+});
+
+/* كشف iOS وعرض تعليمات التثبيت */
+(function checkIOS() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  const dismissed = sessionStorage.getItem('ios-dismissed');
+  if (isIOS && !isStandalone && !dismissed) {
+    setTimeout(() => {
+      document.getElementById('ios-banner').classList.add('show');
+    }, 2000);
+  }
+})();
+</script>
+</body>
+</html>

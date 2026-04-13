@@ -1,0 +1,62 @@
+{
+  "name": "التوزيع البيداغوجي — معهد سبيطلة 2",
+  "short_name": "سبيطلة 2",
+  "description": "تطبيق التوزيع البيداغوجي للبحث عن الأساتذة والأقسام",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1a4d7c",
+  "theme_color": "#1a4d7c",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "shortcuts": [
+    {
+      "name": "بحث حسب الأستاذ",
+      "short_name": "أستاذ",
+      "description": "البحث المباشر عن أستاذ",
+      "url": "./index.html?mode=teacher",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "بحث حسب القسم",
+      "short_name": "قسم",
+      "description": "البحث المباشر عن قسم",
+      "url": "./index.html?mode=class",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
